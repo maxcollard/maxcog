@@ -1,5 +1,16 @@
+#!/usr/bin/env python
+
+#==============================================================================#
+# maxcog.plot
+# v. 0.0.1
 #
-# ...
+# Functions for making pretty plots.
+# 
+# 2016 - Maxwell J. Collard
+#==============================================================================#
+
+"""Functions for generating pretty plots."""
+
 
 ## === IMPORTS === ##
 

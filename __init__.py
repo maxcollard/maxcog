@@ -1,5 +1,20 @@
-#
-# ...
+##!/usr/bin/env python
+
+#==============================================================================#
+# maxcog
+# v. 0.0.1
+# 
+# Home of the LabeledArray.
+# 
+# 2016 - Maxwell J. Collard
+#==============================================================================#
+
+"""Nana-nana-nana-nana MaxCOG: Tools for making data-shepherding easier."""
+
+__appname__ = "MaxCOG"
+__author__  = "Maxwell J. Collard (itsthefedora)"
+__version__ = "0.0.1"
+__license__ = "CC BY-NC-SA"
 
 
 ## === IMPORTS === ##

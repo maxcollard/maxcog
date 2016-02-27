@@ -1,5 +1,15 @@
-#
-# ...
+##!/usr/bin/env python
+
+#==============================================================================#
+# maxcog
+# v. 0.0.1
+# 
+# Home of the LabeledArray.
+# 
+# 2016 - Maxwell J. Collard
+#==============================================================================#
+
+"""Functions for common tasks performed on LabeledArrays."""
 
 
 ## === IMPORTS === ##
