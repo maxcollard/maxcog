@@ -96,7 +96,7 @@ def decimate_labeled ( x, q, **kwargs ):
     
     # Form new axes
     ret_axes = OrderedDict( x.axes )
-    ret_time = np.linspace( x.axes['time'][0], x.axes['time'][-1], ret_array.shape[time_axis] )
+    ret_time = np.linspace( x.axes['time'][0], x.axes['time'][-1], ret_array.shape['time'] )
     ret_axes['time'] = ret_time
     
     return LabeledArray( array = ret_array, axes = ret_axes )
@@ -255,7 +255,7 @@ def baseline_normalize ( x, window, return_baseline = False ):
     # Slice out baseline time window
     baseline_data = x['time', window, 'labeled']
     
-    axis_combine = ( 'time', 'trial' ) if 'trial' in x.axes.keys() else ('time',)
+    axis_combine = ( 'time', 'trial' ) if 'trial' in x.axes else ('time',)
         
     baseline_mu = mean_labeled( baseline_data, axis = axis_combine )
     baseline_sig = std_labeled( baseline_data, axis = axis_combine )

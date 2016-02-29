@@ -272,14 +272,16 @@ class LabeledArray ( object ):
 
     @property
     def shape ( self ):
-        '''Gives the length of each dimension of the underlying ndarray, as
-        implemented by numpy. Returns None if the underlying array is None.
+        '''Gives a dictionary mapping each axis name to the size of the
+        corresponding dimension of the underlying numpy array. Returns None if
+        the underlying array is None.
         '''
 
         if self.array is None:
             return None
 
-        return self.array.shape
+        return { axis_key : self.array.shape[axis_idx]
+                 for axis_idx, axis_key in enumerate( self.axes.keys() ) }
 
     @property
     def extent ( self ):
@@ -512,7 +514,7 @@ class LabeledArray ( object ):
         def _is_killed ( x ):
 
             # TODO This is *Hella* slow. Should re-write if LabeledArray slicing becomes performance-critical
-            full_d = len( self.shape )
+            full_d = len( self.axes )
             test_slice = tuple( _handle_axis( axis_key )
                                 if (axis_key == x and axis_key in key_dict)
                                 else slice( None )
