@@ -17,6 +17,10 @@
 
 # See __init__.py
 
+import numpy                        as np
+import scipy.signal                 as sig
+import scipy.stats.distributions    as dist
+
 import matplotlib
 import matplotlib.pyplot    as plt
 import matplotlib.gridspec  as gridspec

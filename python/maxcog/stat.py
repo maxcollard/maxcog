@@ -6,6 +6,11 @@
 
 # See __init__.py
 
+
+import numpy                        as np
+import scipy.signal                 as sig
+import scipy.stats.distributions    as dist
+
 import numpy.linalg as linalg
 import scipy.sparse as sparse
 

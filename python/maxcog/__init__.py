@@ -297,7 +297,7 @@ class LabeledArray ( object ):
 
     def axis_index( self, axis ):
         '''Returns the index of the specified axis in the underlying array.'''
-        return list( x.axes.keys() ).index( 'time' )
+        return list( self.axes.keys() ).index( 'time' )
 
     def to_array ( self, order = Default ):
         '''Returns the underlying array, re-ordered as desired.
