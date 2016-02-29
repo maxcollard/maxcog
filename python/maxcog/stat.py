@@ -71,8 +71,8 @@ def modulation_classic ( x, baseline_window, z_test = False ):
                                                                             return_baseline = True )
     
     # Compute mean and SD across trials
-    x_mu = mean_labeled( x_norm, axis = 'trial' )
-    x_sig = std_labeled( x_norm, axis = 'trial' )
+    x_mu = maxcog.pipeline.mean_labeled( x_norm, axis = 'trial' )
+    x_sig = maxcog.pipeline.std_labeled( x_norm, axis = 'trial' )
     
     # Allocate statistics
     x_p = LabeledArray( axes = x_mu.axes )
