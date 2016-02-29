@@ -90,6 +90,14 @@ def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
                              facecolor = 'red',
                              alpha = 0.2,
                              linewidth = 0 )
+
+            data_sig = 2 * ( ( data.array + err.array ) < 0 ) - 1
+            ax.fill_between( data.axes[axis],
+                             the_ylim[0] - 1,
+                             the_ylim[0] + 2 * (the_ylim[1] - the_ylim[0]) * data_sig,
+                             facecolor = 'blue',
+                             alpha = 0.2,
+                             linewidth = 0 )
         
     return _plotter
 

@@ -192,7 +192,6 @@ def mean_labeled ( x, axis = None ):
     
     axis_idx = tuple( x.axis_index( ax )
                       for ax in axis )
-    print( axis_idx )
     ret_array = np.mean( x.array, axis = axis_idx )
     
     return LabeledArray( array = ret_array, axes = ret_axes )
