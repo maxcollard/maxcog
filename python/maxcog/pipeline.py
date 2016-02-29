@@ -17,6 +17,8 @@
 
 # See __init__.py
 
+from maxcog import LabeledArray
+
 from collections import OrderedDict
 
 import numpy                        as np
@@ -63,7 +65,7 @@ def filtfilt_labeled ( b, a, x, **kwargs ):
     # Maintain same axes as original
     ret_axes = OrderedDict( x.axes )
     
-    return maxcog.pipeline.LabeledArray( array = ret_array, axes = ret_axes )
+    return LabeledArray( array = ret_array, axes = ret_axes )
 
 
 def decimate_labeled ( x, q, **kwargs ):
@@ -93,7 +95,7 @@ def decimate_labeled ( x, q, **kwargs ):
     ret_time = np.linspace( x.axes['time'][0], x.axes['time'][-1], ret_array.shape[time_axis] )
     ret_axes['time'] = ret_time
     
-    return maxcog.pipeline.LabeledArray( array = ret_array, axes = ret_axes )
+    return LabeledArray( array = ret_array, axes = ret_axes )
 
 def timefreq_fft ( x, **kwargs ):
     '''Labeled analogue of scipy.signal.spectrogram; runs along x's 'time' axis.
@@ -132,7 +134,7 @@ def timefreq_fft ( x, **kwargs ):
     ret_axes['frequency'] = f_spec
     ret_axes.move_to_end( 'frequency', last = False )
     # Allocate full result
-    ret = maxcog.pipeline.LabeledArray( axes = ret_axes )
+    ret = LabeledArray( axes = ret_axes )
     
     # Compute for each trial
     for x_cur, i in x.iter_over( other_axes, return_index = True ):
@@ -156,7 +158,7 @@ def map_labeled ( f, x ):
 
     ret_array = f( x.array )
     ret_axes = OrderedDict( x.axes )
-    return maxcog.pipeline.LabeledArray( array = ret_array, axes = ret_axes )
+    return LabeledArray( array = ret_array, axes = ret_axes )
 
 def mean_labeled ( x, axis = None ):
     '''Labeled analogue of np.mean, running along the specified axis(es).
@@ -188,7 +190,7 @@ def mean_labeled ( x, axis = None ):
                       for ax in axis )
     ret_array = np.mean( x.array, axis = axis_idx )
     
-    return maxcog.pipeline.LabeledArray( array = ret_array, axes = ret_axes )
+    return LabeledArray( array = ret_array, axes = ret_axes )
 
 def std_labeled ( x, axis = None ):
     '''Labeled analogue of np.std, running along the specified axis(es).
@@ -220,7 +222,7 @@ def std_labeled ( x, axis = None ):
                       for ax in axis )
     ret_array = np.std( x.array, axis = axis_idx )
     
-    return maxcog.pipeline.LabeledArray( array = ret_array, axes = ret_axes )
+    return LabeledArray( array = ret_array, axes = ret_axes )
 
 def baseline_normalize ( x, window, return_baseline = False ):
     '''Normalizes the data in x using the mean and standard deviation from the
@@ -255,7 +257,7 @@ def baseline_normalize ( x, window, return_baseline = False ):
     baseline_sig = std_labeled( baseline_data, axis = axis_combine )
     
     # Allocate zeros
-    ret = maxcog.pipeline.LabeledArray( axes = x.axes )
+    ret = LabeledArray( axes = x.axes )
     # Apply normalization to data
     for xi, i in x.iter_over( axis_combine, return_index = True ):
         # TODO Kludge

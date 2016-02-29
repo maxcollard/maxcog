@@ -6,6 +6,9 @@
 
 # See __init__.py
 
+from maxcog import LabeledArray
+import maxcog.pipeline
+
 from collections import OrderedDict
 
 import numpy                        as np
@@ -59,16 +62,16 @@ def modulation_classic ( x, baseline_window, z_test = False ):
         that the true x_mu is zero.
     '''
 
-    x_norm, baseline_mu, baseline_sig = baseline_normalize( x,
-                                                            window = baseline_window,
-                                                            return_baseline = True )
+    x_norm, baseline_mu, baseline_sig = maxcog.pipeline.baseline_normalize( x,
+                                                                            window = baseline_window,
+                                                                            return_baseline = True )
     
     # Compute mean and SD across trials
     x_mu = mean_labeled( x_norm, axis = 'trial' )
     x_sig = std_labeled( x_norm, axis = 'trial' )
     
     # Allocate statistics
-    x_p = maxcog.pipeline.LabeledArray( axes = x_mu.axes )
+    x_p = LabeledArray( axes = x_mu.axes )
     
     n_trials = len( x.axes['trial'] )
     n_baseline = n_trials * len( x['time', baseline_window, 'labeled'].axes['time'] )
