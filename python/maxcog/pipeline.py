@@ -15,7 +15,11 @@
 ## === IMPORTS === ##
 
 
-# See __init__.py
+import time
+import unittest
+import collections
+import itertools
+import functools
 
 from maxcog import LabeledArray
 
