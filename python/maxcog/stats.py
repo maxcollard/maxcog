@@ -1,5 +1,16 @@
+#!/usr/bin/env python
+
+#==============================================================================#
+# maxcog.stats
+# v. 0.0.1
 #
-# ...
+# Functions for statistical computations.
+# 
+# 2016 - Maxwell J. Collard
+#==============================================================================#
+
+"""Functions for statistical computations. NOT READY YET."""
+
 
 ## === IMPORTS === ##
 

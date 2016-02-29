@@ -1,10 +1,10 @@
-##!/usr/bin/env python
+#!/usr/bin/env python
 
 #==============================================================================#
-# maxcog
+# maxcog.pipeline
 # v. 0.0.1
 # 
-# Home of the LabeledArray.
+# Functions for common tasks performed on LabeledArrays.
 # 
 # 2016 - Maxwell J. Collard
 #==============================================================================#
