@@ -76,8 +76,8 @@ def filtfilt_labeled ( b, a, x, **kwargs ):
         cur_slice = functools.reduce( lambda a, b : a + b,
                                       tuple( zip( other_axes,
                                                   i ) ) )
-        ret[cur_slice] = sig.filtfilt( b, a, x.array,
-                                       axis = x.axis_index( 'time' ),
+        ret[cur_slice] = sig.filtfilt( b, a, x_cur.array,
+                                       axis = x_cur.axis_index( 'time' ),
                                        **kwargs )
     
     return ret
