@@ -23,6 +23,109 @@ import matplotlib.gridspec  as gridspec
 import matplotlib.cm        as cm
 
 
+## === STANDARD PLOTTERS === ##
+
+# Plotters are functions that take in a plotting environment and data, and plot
+# the data appropriately. They should have a signature
+#   def _plotter ( ax, data, err = None, **kwargs ):
+#       ...
+#       return None
+
+
+def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
+    
+    # Create a plotter function to return
+    def _plotter ( ax, data, err = None, **kwargs ):
+        
+        if not ( err is None ):
+            ax.fill_between( data.axes[axis],
+                             data.array - err.array,
+                             data.array + err.array,
+                             facecolor = 'black',
+                             alpha = 0.2 )
+        
+        default_kwargs = { 'linewidth': 2 }
+        
+        for k in default_kwargs:
+            if not ( k in kwargs ):
+                kwargs[k] = default_kwargs[k]
+        
+        ax.plot( data.axes[axis],
+                 data.array,
+                 'k-',
+                 **kwargs )
+        
+        ax.grid( color = '#cccccc',
+                 linestyle = '-' )
+        ax.set_axisbelow( True )
+        #ax.tick_params( axis = 'x',
+        #                colors = '#cccccc' )
+        
+        the_xlim = ax.get_xlim() if xlim is None else xlim
+        #ax.plot( xlim, np.array( [0, 0] ), 'k--' )
+        ax.set_xlim( the_xlim )
+        
+        the_ylim = ax.get_ylim() if ylim is None else ylim
+        ax.plot( np.array( [0, 0] ),
+                 the_ylim,
+                 'g-',
+                 linewidth = 1.5 )
+        ax.set_ylim( the_ylim )
+        
+        if not ( err is None ):
+            data_sig = 2 * ( ( data.array - err.array ) > 0 ) - 1
+            ax.fill_between( data.axes[axis],
+                             the_ylim[0] - 1,
+                             the_ylim[0] + 2 * (the_ylim[1] - the_ylim[0]) * data_sig,
+                             facecolor = 'red',
+                             alpha = 0.2,
+                             linewidth = 0 )
+        
+    return _plotter
+
+def plotter_raster ( axis, xlim = None, ylim = None, clim = None ):
+    
+    # Create a plotter function to return
+    def _plotter ( ax, data, err = None, **kwargs ):
+        
+        # For convenience, wrap axis in an array if it's one string
+        the_axis = [ axis ] if isinstance( axis, str ) else axis
+        # For convenience, if we only have one axis, add on another
+        if len( the_axis ) == 1:
+            the_axis += [ next( x for x in data.axes if not (x == the_axis[0]) ) ]
+        
+        plt_array = data.to_array( the_axis )
+        plt_extent = data.extent[axis[1]] + data.extent[axis[0]]
+        
+        default_kwargs = { 'aspect': 'auto',
+                           'interpolation': 'none',
+                           'origin': 'lower',
+                           'cmap': cm.Spectral_r,
+                           'clim': clim }
+        
+        for k in default_kwargs:
+            if not (k in kwargs):
+                kwargs[k] = default_kwargs[k]
+        
+        ax.imshow( plt_array,
+                   extent = plt_extent,
+                   **kwargs )
+
+        the_xlim = ax.get_xlim() if xlim is None else xlim
+        # TODO Kludge?
+        if the_axis[0] == 'time':
+            ax.plot( the_xlim, np.array( [0, 0] ), 'g-', linewidth = 1.5 )
+        ax.set_xlim( the_xlim )
+
+        the_ylim = ax.get_ylim() if ylim is None else ylim
+        # TODO Kludge?
+        if the_axis[1] == 'time':
+            ax.plot( np.array( [0, 0] ), the_ylim, 'g-', linewidth = 1.5 )
+        ax.set_ylim( the_ylim )
+    
+    return _plotter
+
+
 ## === THE MASTER PLOT === ##
 
 
@@ -178,107 +281,6 @@ def grid_plot ( data, grids,
     plt.show()
 
 
-## === STANDARD PLOTTERS === ##
-
-# Plotters are functions that take in a plotting environment and data, and plot
-# the data appropriately. They should have a signature
-#   def _plotter ( ax, data, err = None, **kwargs ):
-#       ...
-#       return None
-
-
-def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
-    
-    # Create a plotter function to return
-    def _plotter ( ax, data, err = None, **kwargs ):
-        
-        if not ( err is None ):
-            ax.fill_between( data.axes[axis],
-                             data.array - err.array,
-                             data.array + err.array,
-                             facecolor = 'black',
-                             alpha = 0.2 )
-        
-        default_kwargs = { 'linewidth': 2 }
-        
-        for k in default_kwargs:
-            if not ( k in kwargs ):
-                kwargs[k] = default_kwargs[k]
-        
-        ax.plot( data.axes[axis],
-                 data.array,
-                 'k-',
-                 **kwargs )
-        
-        ax.grid( color = '#cccccc',
-                 linestyle = '-' )
-        ax.set_axisbelow( True )
-        #ax.tick_params( axis = 'x',
-        #                colors = '#cccccc' )
-        
-        the_xlim = ax.get_xlim() if xlim is None else xlim
-        #ax.plot( xlim, np.array( [0, 0] ), 'k--' )
-        ax.set_xlim( the_xlim )
-        
-        the_ylim = ax.get_ylim() if ylim is None else ylim
-        ax.plot( np.array( [0, 0] ),
-                 the_ylim,
-                 'g-',
-                 linewidth = 1.5 )
-        ax.set_ylim( the_ylim )
-        
-        if not ( err is None ):
-            data_sig = 2 * ( ( data.array - err.array ) > 0 ) - 1
-            ax.fill_between( data.axes[axis],
-                             the_ylim[0] - 1,
-                             the_ylim[0] + 2 * (the_ylim[1] - the_ylim[0]) * data_sig,
-                             facecolor = 'red',
-                             alpha = 0.2,
-                             linewidth = 0 )
-        
-    return _plotter
-
-def plotter_raster ( axis, xlim = None, ylim = None, clim = None ):
-    
-    # Create a plotter function to return
-    def _plotter ( ax, data, err = None, **kwargs ):
-        
-        # For convenience, wrap axis in an array if it's one string
-        the_axis = [ axis ] if isinstance( axis, str ) else axis
-        # For convenience, if we only have one axis, add on another
-        if len( the_axis ) == 1:
-            the_axis += [ next( x for x in data.axes if not (x == the_axis[0]) ) ]
-        
-        plt_array = data.to_array( the_axis )
-        plt_extent = data.extent[axis[1]] + data.extent[axis[0]]
-        
-        default_kwargs = { 'aspect': 'auto',
-                           'interpolation': 'none',
-                           'origin': 'lower',
-                           'cmap': cm.Spectral_r,
-                           'clim': clim }
-        
-        for k in default_kwargs:
-            if not (k in kwargs):
-                kwargs[k] = default_kwargs[k]
-        
-        ax.imshow( plt_array,
-                   extent = plt_extent,
-                   **kwargs )
-
-        the_xlim = ax.get_xlim() if xlim is None else xlim
-        # TODO Kludge?
-        if the_axis[0] == 'time':
-            ax.plot( the_xlim, np.array( [0, 0] ), 'g-', linewidth = 1.5 )
-        ax.set_xlim( the_xlim )
-
-        the_ylim = ax.get_ylim() if ylim is None else ylim
-        # TODO Kludge?
-        if the_axis[1] == 'time':
-            ax.plot( np.array( [0, 0] ), the_ylim, 'g-', linewidth = 1.5 )
-        ax.set_ylim( the_ylim )
-    
-    return _plotter
 
 
 
