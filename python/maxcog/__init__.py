@@ -542,7 +542,7 @@ class LabeledArray ( object ):
             key_dict, _ = self._parse_pairs( key )
             # Slice appropriately
             set_slice, _ = self._compound_slice( key_dict )
-            self.array[ set_slice ] = value
+            self.array[ set_slice ] = new_value
 
         # TODO Other forms of slicing?
 
