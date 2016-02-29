@@ -6,6 +6,7 @@
 
 # See __init__.py
 
+from collections import OrderedDict
 
 import numpy                        as np
 import scipy.signal                 as sig
