@@ -61,15 +61,26 @@ def filtfilt_labeled ( b, a, x, **kwargs ):
 
     # Make sure we don't override axis in the kwargs
     kwargs.pop( 'axis', None )
-    
-    # Filter along time axis
-    ret_array = sig.filtfilt( b, a, x.array,
-                              axis = x.axis_index( 'time' ),
-                              **kwargs )
+
     # Maintain same axes as original
     ret_axes = OrderedDict( x.axes )
+    # Allocate nesult
+    ret = LabeledArray( axes = ret_axes )
+
+    other_axes = [ k
+                   for k in x.axes
+                   if not k == 'time' ]
+
+    # Filter along time axis for each feature
+    for x_cur, i in x.iter_over( other_axes, return_index = True ):
+        cur_slice = functools.reduce( lambda a, b : a + b,
+                                      tuple( zip( other_axes,
+                                                  i ) ) )
+        ret[cur_slice] = sig.filtfilt( b, a, x.array,
+                                       axis = x.axis_index( 'time' ),
+                                       **kwargs )
     
-    return LabeledArray( array = ret_array, axes = ret_axes )
+    return ret
 
 
 def decimate_labeled ( x, q, **kwargs ):
@@ -120,7 +131,7 @@ def timefreq_fft ( x, **kwargs ):
 
     time_axis = x.axis_index( 'time' )
     other_axes = [ k
-                   for k in x.axes.keys()
+                   for k in x.axes
                    if not k == 'time' ]
     
     ## Compute spectrograms
