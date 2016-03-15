@@ -107,7 +107,7 @@ def decimate_labeled ( x, q, **kwargs ):
     
     # Form new axes
     ret_axes = OrderedDict( x.axes )
-    ret_time = np.linspace( x.axes['time'][0], x.axes['time'][-1], ret_array.shape['time'] )
+    ret_time = np.linspace( x.axes['time'][0], x.axes['time'][-1], ret_array.shape[time_axis] )
     ret_axes['time'] = ret_time
     
     return LabeledArray( array = ret_array, axes = ret_axes )
