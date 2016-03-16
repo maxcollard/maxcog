@@ -544,6 +544,12 @@ class LabeledArray ( object ):
             key_dict, _ = self._parse_pairs( key )
             # Slice appropriately
             set_slice, _ = self._compound_slice( key_dict )
+
+            # Handle complex inputs by converting entire array to complex
+            # TODO More nuanced way of handling this?
+            if np.iscomplexobj( new_value ):
+                self.array = self.array + 0j
+
             self.array[ set_slice ] = new_value
 
         # TODO Other forms of slicing?
