@@ -241,6 +241,8 @@ def grid_plot ( data, grids,
                 
                 if isinstance( data, tuple ) or isinstance( data, list ):
 
+                    print( colors )
+
                     # TODO Make this not hard-coded
                     colors = ['blue', 'red', 'green', 'magenta', 'cyan', 'yellow', 'black']
 
