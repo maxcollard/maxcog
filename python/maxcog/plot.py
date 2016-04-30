@@ -238,8 +238,6 @@ def grid_plot ( data, grids,
                                               zip( grid_data_axis,
                                                    _tupelize( grids[i_grid][i][j] ) ) )
                 cur_slice += ('labeled',)
-                
-                print( data )
 
                 if isinstance( data, tuple ) or isinstance( data, list ):
 
