@@ -239,9 +239,9 @@ def grid_plot ( data, grids,
                                                    _tupelize( grids[i_grid][i][j] ) ) )
                 cur_slice += ('labeled',)
                 
-                if isinstance( data, tuple ) or isinstance( data, list ):
+                print( data )
 
-                    print( colors )
+                if isinstance( data, tuple ) or isinstance( data, list ):
 
                     # TODO Make this not hard-coded
                     colors = ['blue', 'red', 'green', 'magenta', 'cyan', 'yellow', 'black']
