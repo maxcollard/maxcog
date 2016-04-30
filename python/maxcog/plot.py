@@ -45,24 +45,24 @@ import matplotlib.cm        as cm
 def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
     
     # Create a plotter function to return
-    def _plotter ( ax, data, err = None, **kwargs ):
+    def _plotter ( ax, data, err = None, do_highlight = True, **kwargs ):
         
-        if not ( err is None ):
-            ax.fill_between( data.axes[axis],
-                             data.array - err.array,
-                             data.array + err.array,
-                             facecolor = 'black',
-                             alpha = 0.2 )
-        
-        default_kwargs = { 'linewidth': 2 }
+        default_kwargs = { 'linewidth': 2, 'color': 'black' }
         
         for k in default_kwargs:
             if not ( k in kwargs ):
                 kwargs[k] = default_kwargs[k]
+
+        if not ( err is None ):
+            ax.fill_between( data.axes[axis],
+                             data.array - err.array,
+                             data.array + err.array,
+                             facecolor = kwargs['color'],
+                             alpha = 0.2 )
         
         ax.plot( data.axes[axis],
                  data.array,
-                 'k-',
+                 '-',
                  **kwargs )
         
         ax.grid( color = '#cccccc',
@@ -82,7 +82,7 @@ def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
                  linewidth = 1.5 )
         ax.set_ylim( the_ylim )
         
-        if not ( err is None ):
+        if do_highlight and not ( err is None ):
             data_sig = 2 * ( ( data.array - err.array ) > 0 ) - 1
             ax.fill_between( data.axes[axis],
                              the_ylim[0] - 1,
@@ -239,15 +239,34 @@ def grid_plot ( data, grids,
                                                    _tupelize( grids[i_grid][i][j] ) ) )
                 cur_slice += ('labeled',)
                 
-                if err is None:
-                    plotter( ax,
-                             data[cur_slice],
-                             **kwargs )
+                if isinstance( data, tuple ) or isinstance( data, list ):
+
+                    # TODO Make this not hard-coded
+                    colors = ['blue', 'red', 'green', 'magenta', 'cyan', 'yellow', 'black']
+
+                    if err is None:
+                        for d, color in zip( data, colors ):
+                            kwargs['color'] = color
+                            plotter( ax,
+                                     d[cur_slice],
+                                     **kwargs )
+                    else:
+                        for d, e, color in zip( data, err, colors ):
+                            kwargs['color'] = color
+                            plotter( ax,
+                                     d[cur_slice],
+                                     e[cur_slice],
+                                     **kwargs )
                 else:
-                    plotter( ax,
-                             data[cur_slice],
-                             err[cur_slice],
-                             **kwargs )
+                    if err is None:
+                        plotter( ax,
+                                 data[cur_slice],
+                                 **kwargs )
+                    else:
+                        plotter( ax,
+                                 data[cur_slice],
+                                 err[cur_slice],
+                                 **kwargs )
                 
                 # Channel names
                 if grid_names:
@@ -263,8 +282,8 @@ def grid_plot ( data, grids,
                              fontsize = text_size )
     
     # Clean up axis labels
-    plt.setp( [a.get_xticklabels() for a in f.axes], visible=False )
-    plt.setp( [a.get_yticklabels() for a in f.axes], visible=False )
+    plt.setp( [a.get_xticklabels() for a in f.axes], visible = False )
+    plt.setp( [a.get_yticklabels() for a in f.axes], visible = False )
     
     # Thicken plot borders
     border_width = 1.0
