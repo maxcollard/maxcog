@@ -253,7 +253,7 @@ def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True, return_
 
     if return_stats:
         return ret.tocsr(), stat_dict
-        
+
     return ret.tocsr()
 
 import time
@@ -272,7 +272,7 @@ def locregress_eval ( y, L,
 
     # TODO Hella stupid
     if L_norms is None:
-        L_norms = np.sum( (L * L).toarray(), axis = 1 )
+        L_norms = np.sum( np.power( L.toarray(), 2.0 ), axis = 1 )
     if nu is None:
         nu = np.trace( L.toarray() )
     if nu_twiddle is None:
