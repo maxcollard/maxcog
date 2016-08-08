@@ -123,8 +123,13 @@ def modulation_classic ( x, baseline_window, z_test = False ):
 def _kernel_tricube( x, h ):
     return (70.0 / 81.0) * (np.abs( x / h ) < 1) * (1 - np.abs(x / h)**3)**3
 
+def _kernel_tricube_norm_squared():
+    return 175.0 / 247.0
+def _kernel_tricube_derivative_norm_squared():
+    return 420.0 / 187.0
 
-def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True ):
+
+def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True, return_stats = False ):
     '''DO NOT USE'''
 
     # Cache some constants
@@ -134,6 +139,9 @@ def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True ):
 
     # Preallocate sparse return value
     ret = sparse.lil_matrix( (n, n) )
+
+    # Preallocate return statistics
+    stat_dict = {}
 
     # Apply intuition that, for regularly spaced grids, weights on the interior
     # are just shifted versions of the same kernel
@@ -151,6 +159,7 @@ def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True ):
         dx_norm = linalg.norm( dx, axis = 1 )
         dx_norm = np.sort( dx_norm, axis = 0 )
         h_interior = dx_norm[span_samples + 1]
+        stat_dict['h_interior'] = h_interior
 
         # Find bounding box for where we can use interior kernel
         x_interior_min = np.min( x, axis = 0 ) + h_interior
@@ -242,6 +251,9 @@ def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True ):
 
         ret[i, w_slice] = np.dot( e1.T, linalg.solve( a1, a2 ) )
 
+    if return_stats:
+        return ret.tocsr(), stat_dict
+        
     return ret.tocsr()
 
 import time
