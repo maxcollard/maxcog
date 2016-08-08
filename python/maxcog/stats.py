@@ -242,7 +242,7 @@ def locregress_weights ( x, span = 0.2, order = 1, fast_interior = True ):
 
         ret[i, w_slice] = np.dot( e1.T, linalg.solve( a1, a2 ) )
 
-    return ret.tcsr()
+    return ret.tocsr()
 
 import time
 
