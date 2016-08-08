@@ -282,6 +282,7 @@ def locregress_eval ( y, L,
     # Compute error bounds
     p_star = alpha / n_y
     z_crit = dist.norm.ppf( 1.0 - ( p_star / 2.0 ) )
+    stat_dict['z_crit'] = z_crit
 
     y_err = np.reshape( z_crit * np.sqrt( s2_hat * L_norms ), y.shape )
 
