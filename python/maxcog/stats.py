@@ -35,6 +35,13 @@ import scipy.sparse as sparse
 
 from maxcog.pipeline import baseline_normalize
 
+# TODO Kludgey way to make things work without dependencies for testing
+
+try:
+    from pbar import pbar
+except:
+    def pbar( x, task = None ): return x
+
 
 ## === BASICS === ##
 
