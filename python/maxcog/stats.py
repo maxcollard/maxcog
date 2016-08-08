@@ -281,6 +281,7 @@ def locregress_eval ( y, L,
 
     # Compute error bounds
     p_star = alpha / n_y
+    stat_dict['p_star'] = p_star
     z_crit = dist.norm.ppf( 1.0 - ( p_star / 2.0 ) )
     stat_dict['z_crit'] = z_crit
 
