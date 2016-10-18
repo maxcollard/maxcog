@@ -29,6 +29,7 @@ import functools
 from collections import OrderedDict
 
 import numpy                        as np
+import numpy.lib.recfunctions       as recfunctions
 import scipy.signal                 as sig
 import scipy.stats.distributions    as dist
 
@@ -157,7 +158,7 @@ class EventFrame ( object ):
         ret['time'] = np.linspace( self.window[0],self.window[1], len( self._t_slice( 0 ) ) )
         ret['channel'] = self.eeg.get_labels()
         if not single_trial:
-            ret['trial'] = np.arange( 1, len( self.events ) + 1 )
+            ret['trial'] = np.array( np.arange( 1, len( self.events ) + 1 ), dtype = [ ( 'val', int ) ] )
         return ret
 
 
@@ -195,10 +196,15 @@ class EventFrame ( object ):
         ret_axes = self._axes()
         ret_array = np.zeros( tuple( map( len, ret_axes.values() ) ) )
         i = 0
+        event_names = []
         for event in pbar( self.events ):
             ret_array[:, :, i] = self.eeg[self._t_slice( event['start_idx'] ), :]
+            event_names.append( event[ 'name' ] )
             i += 1
 
+        ret_axes[ 'trial' ] = recfunctions.append_fields( ret_axes[ 'trial' ], 
+                                                         'event_name', 
+                                                         np.array( event_names ) )
         return LabeledArray( ret_array, ret_axes )
 
 class LabeledArray ( object ):
@@ -294,12 +300,17 @@ class LabeledArray ( object ):
         plotting; e.g.,
             plt.set_xlim( data.extent['time'] )
         '''
-        return { axis_key : ( self.axes[axis_key][0], self.axes[axis_key][-1] )
+        return { axis_key : ( ( self.axes[axis_key][0], self.axes[axis_key][-1] ) 
+                               if self.axes[ axis_key ].dtype.names == None 
+                               else ( 0, len( self.axes[ axis_key ] ) ) )
                  for axis_key in self.axes.keys() }
 
-    def axis_index( self, axis ):
+    def axis_index ( self, axis ):
         '''Returns the index of the specified axis in the underlying array.'''
         return list( self.axes.keys() ).index( axis )
+    
+    def append_axis_fields ( self, axis, names, data, **kwargs ):
+        self.axes[ axis ] = recfunctions.append_fields( self.axes[ axis ], names, data, **kwargs )
 
     def to_array ( self, order = Default ):
         '''Returns the underlying array, re-ordered as desired.
@@ -374,8 +385,8 @@ class LabeledArray ( object ):
         def _slicerate ( idx ):
             cs, _ = self._compound_slice( dict( zip( axis, idx ) ) )
             ret_arr = np.squeeze( self.array[cs] )
-            ret_axes = OrderedDict( { k: v for (k, v) in self.axes.items()
-                                            if not (k in axis) } )
+            ret_axes = OrderedDict( [ ( k, v ) for k, v in self.axes.items()
+                                            if not ( k in axis ) ] )
             return LabeledArray( ret_arr, ret_axes )
 
         product_indices = itertools.product( *[ range( len( self.axes[x] ) ) for x in axis ] )
@@ -440,6 +451,15 @@ class LabeledArray ( object ):
             ret_array[i] = cur_arr.flatten()
 
         return LabeledArray( array = ret_array, axes = ret_axes )
+    
+    def sort_axis ( self, axis, order = None ):
+        ax_labels = self.axes[ axis ]
+        sort_order = np.argsort( ax_labels, order = order )
+        ax_idx = self.axis_index( axis )
+        reorder = [ slice( None ) if aIdx != ax_idx else list( sort_order ) 
+                    for aIdx, ax in enumerate( self.axes ) ]
+        self.array = self.array.__getitem__( reorder )
+        self.axes[ axis ] = self.axes[ axis ][ list( sort_order ) ]
 
     def _parse_pairs ( self, slice_list ):
         '''Convenience method for parsing the contents of a compound slice list.
@@ -477,37 +497,59 @@ class LabeledArray ( object ):
 
         # Generates an appropriate slice-capable object for a particular axis x
         def _handle_axis ( x ):
-
-            ret = key_dict[x]
-
-            # Axis labels are strings
-            if isinstance( self.axes[x][0], str ):
+            
+            masks = []
+            for key, query in key_dict.items():
+                field = None
+                if '.' in key: 
+                    key, field = key.split( '.' )
+                if x != key: continue
+                    
+                axis = self.axes[x]
+                
+                if( axis.dtype.names != None ):
+                    if( field != None and field in axis.dtype.names ):
+                        axis = axis[ field ]
+                    else: axis = axis[ axis.dtype.names[0] ]
+                
                 # Single string query
-                if isinstance( ret, str ):
-                    ret = list( self.axes[x] ).index( ret )
+                if isinstance( query, str ) and isinstance( axis[0], str ):
+                    masks.append( [ idx for idx, val in enumerate( list( axis ) ) if val == query ] )
+                
                 # Multiple string query
-                elif isinstance( ret, collections.Sequence ):
-                    if isinstance( ret[0], str ):
-                        ret = [ list( self.axes[x] ).index( r ) for r in ret ]
+                elif isinstance( query, collections.Sequence ) and isinstance( query[0], str ) and isinstance( axis[0], str ):
+                    indices = [ [ idx for idx, val in enumerate( list( axis ) ) if val == q ] for q in query ]
+                    masks.append( functools.reduce( lambda x, y: x + y, indices ) )
 
-            # Query is a 2-tuple -- Range
-            elif isinstance( ret, tuple ):
-                if len( ret ) == 2:
-                    # Yields a ndarray for slicing, which can get hairy with multiples.
-                    #ret = np.where( np.logical_and( self.axes[x] >= ret[0],
-                    #    self.axes[x] < ret[1] ) )[0]
+                # Query is a 2-tuple -- Range
+                elif isinstance( query, tuple ):
+                    if len( query ) == 2:
+                        masks.append( list( np.where( np.logical_and( axis >= query[0], axis < query[1] ) )[0] ) )
+                
+                # Query is an integer index  Add to masks
+                elif isinstance( query, int ): masks.append( [ query ] )
+                    
+                # Query is some numpy compatible slice notation.  Get a mask
+                else: masks.append( list( np.arange( len( axis ) )[ query ] ) )
+                    
+            if len( masks ) == 0: return slice( None )
+            
+            final_mask = functools.reduce( np.intersect1d, masks )
+            
+            if len( final_mask ) == 1:
+                # It turns out that when you index array[ [0], : ], you get a result of shape ( 1, n )
+                # but if you index array[ 0, : ], you get a result of shape ( n, ).  GAH. -Griff
+                final_mask = final_mask[0]
+            else:    
+                # It also turns out that indexing an array with multiple index arrays results in 
+                # undefined behavior... UGHHHH.  We should turn index arrays into slices as much 
+                # as possible... - Griff
+                d = list( set( np.diff( final_mask ) ) )
+                if len( d ) == 1 and d[0] == 1:
+                    final_mask = slice( final_mask[0], final_mask[-1] + 1 )
+                
+            return final_mask;
 
-                    # Just operate as a slice
-                    ret_where = np.where( np.logical_and( self.axes[x] >= ret[0],
-                        self.axes[x] < ret[1] ) )[0]
-                    if len( ret) == 0:
-                        ret = slice( 0, 0 )
-                    else:
-                        ret = slice( ret_where[0], ret_where[-1] + 1 )
-
-            # TODO Raise an error for incompatible objects
-
-            return ret
 
         # Determines whether numpy kills the axis named x when it's sliced;
         # used for determining the axes of the newly returned 
@@ -515,18 +557,14 @@ class LabeledArray ( object ):
 
             # TODO This is *Hella* slow. Should re-write if LabeledArray slicing becomes performance-critical
             full_d = len( self.axes )
-            test_slice = tuple( _handle_axis( axis_key )
-                                if (axis_key == x and axis_key in key_dict)
-                                else slice( None )
+            test_slice = tuple( _handle_axis( axis_key ) 
+                                if x == axis_key else slice( None ) 
                                 for axis_key in self.axes.keys() )
-            slice_d = len( self.array[test_slice].shape )
+            slice_d = len( np.squeeze( self.array[ test_slice ] ).shape )
 
             return (full_d > slice_d)
 
-        return ( tuple( _handle_axis( axis )
-                        if axis in key_dict
-                        else slice( None )
-                        for axis in self.axes ),
+        return ( tuple( _handle_axis( axis ) for axis in self.axes ),
             [ axis for axis in self.axes if _is_killed( axis ) ] )
 
     def __setitem__ ( self, key, new_value ):
@@ -549,7 +587,7 @@ class LabeledArray ( object ):
             # TODO More nuanced way of handling this?
             if np.iscomplexobj( new_value ):
                 self.array = self.array + 0j
-
+                
             self.array[ set_slice ] = new_value
 
         # TODO Other forms of slicing?
@@ -594,16 +632,21 @@ class LabeledArray ( object ):
             ret_slice, killed_axes = self._compound_slice( key_dict )
             if labeled:
                 good_keys = [ axis_key for axis_key in self.axes.keys()
-                    if not ( axis_key in killed_axes ) ]
+                    if axis_key not in killed_axes ]
                 good_values = ( self.axes[axis_key] for axis_key in good_keys )
                 good_slices = ( ret_slice[i] for i, axis_key in enumerate( self.axes.keys() )
-                    if not ( axis_key in killed_axes ) )
-
-                return LabeledArray( array = self.array[ret_slice],
+                    if axis_key not in killed_axes )
+                
+                # Issue a warning about slicing with multiple index arrays
+                num_index_arrays = np.sum( [ 1 if isinstance( s, collections.Sequence ) else 0 for s in ret_slice ] )
+                if( num_index_arrays > 1 ):
+                    warnings.warn( 'This is a pretty fancy slice.  Be aware of your limited karma!' )
+                    
+                return LabeledArray( array = np.squeeze( self.array[ ret_slice ] ),
                                      axes = OrderedDict( zip( good_keys,
                                                          map( lambda x,y : x[y], good_values, good_slices ) ) ) )
             else:
-                return self.array[ret_slice]
+                return np.squeeze( self.array[ret_slice] )
 
         # TODO Other forms of slicing?
 

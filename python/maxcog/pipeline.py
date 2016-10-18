@@ -161,6 +161,27 @@ def timefreq_fft ( x, **kwargs ):
     
     return ret
 
+def hilbert_labeled ( x, **kwargs ):
+    '''Labeled analogue of scipy.signal.hilbert; runs along x's 'time' axis.
+
+    Inputs:
+    x - LabeledArray containing the data; must have a 'time' axis, and probably
+        shouldn't have a 'frequency' axis
+    **kwargs - (Optional) Keyword arguments passed to hilbert
+
+    Output is a LabeledArray with the same axes as x, but containing the analytic signal
+    '''
+    # Make sure we don't override axis in the kwargs
+    kwargs.pop( 'axis', None )
+    time_axis = x.axis_index( 'time' )
+
+    ## Compute analytic signal
+    ret_axes = OrderedDict( x.axes )
+    ret = LabeledArray( axes = ret_axes )
+    ret.array = sig.hilbert( x.array, axis = time_axis, **kwargs )
+    
+    return ret
+
 def map_labeled ( f, x ):
     '''Maps each element of the LabeledArray x through a function f.
 

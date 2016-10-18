@@ -79,7 +79,7 @@ def plotter_trace ( axis = 'time', xlim = None, ylim = None ):
         ax.plot( np.array( [0, 0] ),
                  the_ylim,
                  'g-',
-                 linewidth = 1.5 )
+                 linewidth = 1.5, alpha = 0.2 )
         ax.set_ylim( the_ylim )
         
         if do_highlight and not ( err is None ):
@@ -132,13 +132,13 @@ def plotter_raster ( axis, xlim = None, ylim = None, clim = None ):
         the_xlim = ax.get_xlim() if xlim is None else xlim
         # TODO Kludge?
         if the_axis[0] == 'time':
-            ax.plot( the_xlim, np.array( [0, 0] ), 'g-', linewidth = 1.5 )
+            ax.plot( the_xlim, np.array( [0, 0] ), 'g-', linewidth = 1.5, alpha = 0.2 )
         ax.set_xlim( the_xlim )
 
         the_ylim = ax.get_ylim() if ylim is None else ylim
         # TODO Kludge?
         if the_axis[1] == 'time':
-            ax.plot( np.array( [0, 0] ), the_ylim, 'g-', linewidth = 1.5 )
+            ax.plot( np.array( [0, 0] ), the_ylim, 'g-', linewidth = 1.5, alpha = 0.2 )
         ax.set_ylim( the_ylim )
     
     return _plotter
