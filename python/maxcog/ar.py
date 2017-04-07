@@ -33,14 +33,14 @@ def tvdbn ( X,
             kernel_thresh = 0.001,
             show_pbar = False ):
     ''' ... '''
-    
+
     # Shortcuts
     T = X.shape[0]
     N = X.shape[1]
     ts = np.arange( T )
     
     # Pre-allocate output
-    t_out = np.arange( 1, T, step )
+    t_out = np.arange( predict_lag, T, step )
     ret = np.zeros( (N, N, t_out.shape[0]) )
     
     # TODO Correct mapping between lambda and alpha??
