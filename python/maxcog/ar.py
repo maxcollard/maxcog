@@ -22,7 +22,12 @@ def _tvdbn_kernel ( ts, t0, h ):
     s = np.sum( _kernel_gaussian( ts, h ) )
     return (1/s) * _kernel_gaussian( ts - t0, h )
 
-def tvdbn ( X, predict_lag = 1, reg_weight = 1.0, kernel_width = 4.0, kernel_thresh = 0.001 ):
+def tvdbn ( X,
+            step = 1,
+            predict_lag = 1,
+            reg_weight = 1.0,
+            kernel_width = 4.0,
+            kernel_thresh = 0.001 ):
     ''' ... '''
     # Shortcuts
     T = X.shape[0]
@@ -35,7 +40,7 @@ def tvdbn ( X, predict_lag = 1, reg_weight = 1.0, kernel_width = 4.0, kernel_thr
     # TODO Correct mapping between lambda and alpha??
     model = lm.Ridge( alpha = reg_weight )
     
-    for t in pbar( range( 1, T ) ):
+    for t in pbar( range( 1, T, step ) ):
         # Compute weighting kernel
         cur_kernel = _tvdbn_kernel( ts, t, kernel_width )
         # Create slicing vectors for present and past, using threshold to cut fat
