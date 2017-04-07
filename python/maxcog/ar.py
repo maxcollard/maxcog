@@ -30,8 +30,10 @@ def tvdbn ( X,
             predict_lag = 1,
             reg_weight = 1.0,
             kernel_width = 4.0,
-            kernel_thresh = 0.001 ):
+            kernel_thresh = 0.001,
+            show_pbar = False ):
     ''' ... '''
+    
     # Shortcuts
     T = X.shape[0]
     N = X.shape[1]
@@ -44,7 +46,8 @@ def tvdbn ( X,
     # TODO Correct mapping between lambda and alpha??
     model = lm.Ridge( alpha = reg_weight )
     
-    for i_t in pbar( range( t_out.shape[0] ) ):
+    t_iterator = pbar( range( t_out.shape[0] ) ) if show_pbar else range( t_out.shape[0] )
+    for i_t in t_iterator:
         t = t_out[i_t]
 
         # Compute weighting kernel
