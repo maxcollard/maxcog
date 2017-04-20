@@ -104,12 +104,24 @@ def unpack_channels ( *packed, formatter = None ):
     ret_lists = [ tuple_to_list( name, chans ) for name, chans in packed ]
     return flatten( ret_lists )
 
-
 def make_event ( name = None, start_idx = 0, duration = 0 ):
     '''Conveniently creates an event compatible with H5EEG's format'''
     if name == None:
         return np.array( [], dtype = EVENT_DTYPE )
     return np.array( [(name, start_idx, duration)], dtype = EVENT_DTYPE )[0]
+
+def label_eeg ( eeg ):
+    '''Convert an H5EEGDataset directly into a LabeledArray.
+
+    CAUTION: Resulting array may be 'UGE!'''
+
+    ret_axes = OrderedDict()
+    ret_axes['time'] = eeg.samp_to_sec( np.arange( len( eeg ) ) )
+    ret_axes['channel'] = eeg.get_labels()
+
+    ret_array = eeg[:, :]
+
+    return LabeledArray( ret_array, ret_axes )
 
 
 ## === CLASSES === ##
@@ -145,7 +157,7 @@ class EventFrame ( object ):
         return range( int( round( x + self.eeg.get_rate() * self.window[0] ) ),
                       int( round( x + self.eeg.get_rate() * self.window[1] ) ) )
 
-    def _axes ( self, single_trial = False ):
+    def _axes ( self, single_trial = False, channels = None ):
         '''Convenience method to create an axes object compatible with
         LabeledArray
 
@@ -156,7 +168,7 @@ class EventFrame ( object ):
 
         ret = OrderedDict()
         ret['time'] = np.linspace( self.window[0],self.window[1], len( self._t_slice( 0 ) ) )
-        ret['channel'] = self.eeg.get_labels()
+        ret['channel'] = channels if channels != None else self.eeg.get_labels()
         if not single_trial:
             ret['trial'] = np.array( np.arange( 1, len( self.events ) + 1 ), dtype = [ ( 'val', int ) ] )
         return ret
@@ -206,6 +218,7 @@ class EventFrame ( object ):
                                                          'event_name', 
                                                          np.array( event_names ) )
         return LabeledArray( ret_array, ret_axes )
+
 
 class LabeledArray ( object ):
     '''Encapsulates a data array and a "labeling" of the array, which includes
