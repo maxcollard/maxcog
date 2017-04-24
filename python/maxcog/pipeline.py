@@ -73,6 +73,11 @@ def filtfilt_labeled ( b, a, x, **kwargs ):
 
     # Filter along time axis for each feature
     for x_cur, i in x.iter_over( other_axes, return_index = True ):
+        
+        # TODO Decide on better API for iter_over
+        if len( other_axes ) == 1:
+            i = (i,)
+
         cur_slice = functools.reduce( lambda a, b : a + b,
                                       tuple( zip( other_axes,
                                                   i ) ) )
