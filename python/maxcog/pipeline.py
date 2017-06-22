@@ -265,16 +265,14 @@ def std_labeled ( x, axis = None ):
     
     return LabeledArray( array = ret_array, axes = ret_axes )
 
-def baseline_normalize ( x, window, return_baseline = False ):
+def normalize ( x, baseline_data, return_baseline = False ):
     '''Normalizes the data in x using the mean and standard deviation from the
-    time points within window, aggregated across the 'trial' axis if present.
-    Each non-'trial' feature in x is normalized individually.
+    values within a separate dataframe, aggregated across the 'trial' axis if 
+    present. Each non-'trial' feature in x is normalized individually.
 
     Inputs:
     x - LabeledArray containing data to be normalized. Must have a 'time' axis
-    window - 2-tuple specifying the start and end time of the baseline window.
-        This is used for LabeledArray slicing, so it's a "right-open" interval,
-        i.e. [start, end)
+    bl - LabeledArray containing data for the baseline period.
     return_baseline - (Optional) If True, will also return the baseline mean
         and standard deviation
         Default: False
@@ -287,11 +285,7 @@ def baseline_normalize ( x, window, return_baseline = False ):
             where baseline_mu and baseline_sig are LabeledArrays with the same
             axes as x except for 'time' (and 'trial' if present), which are
             collapsed when forming the baseline distributions.
-    '''
-
-    # Slice out baseline time window
-    baseline_data = x['time', window, 'labeled']
-    
+    ''' 
     axis_combine = ( 'time', 'trial' ) if 'trial' in x.axes else ('time',)
         
     baseline_mu = mean_labeled( baseline_data, axis = axis_combine )
@@ -312,6 +306,14 @@ def baseline_normalize ( x, window, return_baseline = False ):
     else:
         return ret
 
+def baseline_normalize ( x, window, **kwargs ):
+    '''Alias for normalize, wherein a baseline time-frame can be defined
+    from within the the same dataframe.  This exists for backward
+    compatibility with existing analyses.
+    
+    See documentation for pipeline.normalize
+    '''
+    return baseline_normalize( x,  x['time', window, 'labeled'], **kwargs )
 
 
 
