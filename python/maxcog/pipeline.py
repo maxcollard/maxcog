@@ -313,7 +313,7 @@ def baseline_normalize ( x, window, **kwargs ):
     
     See documentation for pipeline.normalize
     '''
-    return baseline_normalize( x,  x['time', window, 'labeled'], **kwargs )
+    return normalize( x,  x['time', window, 'labeled'], **kwargs )
 
 
 
