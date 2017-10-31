@@ -302,22 +302,26 @@ def grid_plot ( data, grids,
     
     # Put tick labels on lower-left plot of each grid
     for ll_ax in [ grid_axes[-1][0] for grid_axes in plt_axes ]:
-        # Swap out label for x origin.
-        ll_ax.set_xticklabels( [ origin_label if ll_ax.get_xticks()[i] == 0
-                                 else ll_ax.get_xticklabels()[i].get_text()
-                                 for i in range( len( ll_ax.get_xticks() ) ) ] )
-        # Turn on visibility for x origin and axis ends.
-        plt.setp( [ ll_ax.get_xticklabels()[i]
-                    for i in range( -1, len( ll_ax.get_xticks() - 1 ) )
-                    if i in [-1, 0] or ll_ax.get_xticks()[i] == 0 ],
-                  visible = True )
-        # Turn on visibility for y.
-        plt.setp( ll_ax.get_yticklabels(), visible = True )
+        try:
+            # Swap out label for x origin.
+            ll_ax.set_xticklabels( [ origin_label if ll_ax.get_xticks()[i] == 0
+                                     else ll_ax.get_xticklabels()[i].get_text()
+                                     for i in range( len( ll_ax.get_xticks() ) ) ] )
+            # Turn on visibility for x origin and axis ends.
+            plt.setp( [ ll_ax.get_xticklabels()[i]
+                        for i in range( -1, len( ll_ax.get_xticks() - 1 ) )
+                        if i in [-1, 0] or ll_ax.get_xticks()[i] == 0 ],
+                      visible = True )
+            # Turn on visibility for y.
+            plt.setp( ll_ax.get_yticklabels(), visible = True )
+        except AttributeError: continue
 
-    # Put axis labels on first grid only.
-    ax = plt_axes[0][-1][0]
-    ax.set_xlabel( xlabel )
-    ax.set_ylabel( ylabel )
+    try:
+        # Put axis labels on first grid only.
+        ax = plt_axes[0][-1][0]
+        ax.set_xlabel( xlabel )
+        ax.set_ylabel( ylabel )
+    except AttributeError: pass
 
     plt.show()
 
