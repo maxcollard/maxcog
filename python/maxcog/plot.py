@@ -283,7 +283,7 @@ def grid_plot ( data, grids,
                                  horizontalalignment = 'left',
                                  fontsize = text_size )
 
-                except ValueError: continue
+                except: continue
     
     # Clean up axis labels
     plt.setp( [a.get_xticklabels() for a in f.axes], visible = False )
