@@ -239,47 +239,51 @@ def grid_plot ( data, grids,
                                                    _tupelize( grids[i_grid][i][j] ) ) )
                 cur_slice += ('labeled',)
 
-                if isinstance( data, tuple ) or isinstance( data, list ):
+                try:
 
-                    # TODO Make this not hard-coded
-                    colors = ['blue', 'red', 'green', 'magenta', 'cyan', 'yellow', 'black']
+                    if isinstance( data, tuple ) or isinstance( data, list ):
 
-                    if err is None:
-                        for d, color in zip( data, colors ):
-                            kwargs['color'] = color
-                            plotter( ax,
-                                     d[cur_slice],
-                                     **kwargs )
+                        # TODO Make this not hard-coded
+                        colors = ['blue', 'red', 'green', 'magenta', 'cyan', 'yellow', 'black']
+
+                        if err is None:
+                            for d, color in zip( data, colors ):
+                                kwargs['color'] = color
+                                plotter( ax,
+                                         d[cur_slice],
+                                         **kwargs )
+                        else:
+                            for d, e, color in zip( data, err, colors ):
+                                kwargs['color'] = color
+                                plotter( ax,
+                                         d[cur_slice],
+                                         e[cur_slice],
+                                         **kwargs )
                     else:
-                        for d, e, color in zip( data, err, colors ):
-                            kwargs['color'] = color
+                        if err is None:
                             plotter( ax,
-                                     d[cur_slice],
-                                     e[cur_slice],
+                                     data[cur_slice],
                                      **kwargs )
-                else:
-                    if err is None:
-                        plotter( ax,
-                                 data[cur_slice],
-                                 **kwargs )
-                    else:
-                        plotter( ax,
-                                 data[cur_slice],
-                                 err[cur_slice],
-                                 **kwargs )
+                        else:
+                            plotter( ax,
+                                     data[cur_slice],
+                                     err[cur_slice],
+                                     **kwargs )
                 
-                # Channel names
-                if grid_names:
-                    text_bump = 0.03
-                    text_size = 10
+                    # Channel names
+                    if grid_names:
+                        text_bump = 0.03
+                        text_size = 10
                     
-                    text_pos_x = ax.get_xlim()[0] + (ax.get_xlim()[1] - ax.get_xlim()[0]) * text_bump
-                    text_pos_y = ax.get_ylim()[1] - (ax.get_ylim()[1] - ax.get_ylim()[0]) * text_bump
+                        text_pos_x = ax.get_xlim()[0] + (ax.get_xlim()[1] - ax.get_xlim()[0]) * text_bump
+                        text_pos_y = ax.get_ylim()[1] - (ax.get_ylim()[1] - ax.get_ylim()[0]) * text_bump
                     
-                    ax.text( text_pos_x, text_pos_y, grids[i_grid][i][j],
-                             verticalalignment = 'top',
-                             horizontalalignment = 'left',
-                             fontsize = text_size )
+                        ax.text( text_pos_x, text_pos_y, grids[i_grid][i][j],
+                                 verticalalignment = 'top',
+                                 horizontalalignment = 'left',
+                                 fontsize = text_size )
+
+                except ValueError: continue
     
     # Clean up axis labels
     plt.setp( [a.get_xticklabels() for a in f.axes], visible = False )
